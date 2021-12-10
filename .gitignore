@@ -1,0 +1,11 @@
+.DS_Store
+
+venv/
+
+*.log
+*.pot
+*.pyc
+__pycache__/
+
+.env
+.idea/
