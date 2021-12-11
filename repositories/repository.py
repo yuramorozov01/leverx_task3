@@ -1,8 +1,10 @@
+from abc import ABC, abstractmethod
+
 from decouple import config
 import mysql.connector
 
 
-class Repository:
+class Repository(ABC):
     _connection = None
 
     @classmethod
@@ -13,23 +15,24 @@ class Repository:
                     user=config('DB_USER'),
                     password=config('DB_PASSWORD'),
                     host=config('DB_HOST'),
-                    database=config('DB_NAME')
+                    port=config('DB_PORT'),
+                    auth_plugin='mysql_native_password'
                 )
                 cls._connection = cnx
             except mysql.connector.Error as err:
                 print(err.msg)
-                cls._close_connection()
+                cls.close_connection()
         return cls._connection
 
     @classmethod
-    def _close_connection(cls):
+    def close_connection(cls):
         if cls._connection is not None:
             try:
                 cls._connection.close()
                 cls._connection = None
             except mysql.connector.Error as err:
                 print(err.msg)
-                cls._close_connection()
+                cls.close_connection()
 
     @classmethod
     def make_query(cls, query, params=None):
@@ -42,10 +45,46 @@ class Repository:
                 print(err.msg)
 
     @classmethod
-    def _create_database(cls):
+    def make_many_query(cls, query, list_params=None):
+        if cls._connection is not None:
+            try:
+                cursor = cls._connection.cursor()
+                cursor.executemany(query, list_params)
+                cls._connection.commit()
+            except mysql.connector.Error as err:
+                print(err.msg)
+
+    @classmethod
+    def create_database(cls):
         if cls._connection is not None:
             query = (
-                "CREATE DATABASE %s DEFAULT CHARACTER SET 'utf8'"
+                "CREATE DATABASE IF NOT EXISTS {} "
+                "DEFAULT CHARACTER SET utf8 "
+                "DEFAULT COLLATE utf8_general_ci;"
+            ).format(config('DB_NAME'))
+            cls.make_query(query)
+
+            query = (
+                "USE {}"
+            ).format(config('DB_NAME'))
+            cls.make_query(query)
+
+            query = (
+                "SET sql_mode='NO_AUTO_VALUE_ON_ZERO'"
             )
-            params = (config('DB_NAME'),)
-            cls.make_query(query, params)
+            cls.make_query(query)
+
+    @classmethod
+    @abstractmethod
+    def create_table(cls):
+        '''Create table in database for specified model'''
+
+    @classmethod
+    @abstractmethod
+    def add(cls, instance):
+        '''Add instance to database'''
+
+    @classmethod
+    @abstractmethod
+    def add_many(cls, instances):
+        '''Add list of instances to database'''

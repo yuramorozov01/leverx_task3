@@ -5,7 +5,7 @@ class RoomsRepository(Repository):
     _connection = Repository.get_connection()
 
     @classmethod
-    def create_rooms_table(cls):
+    def create_table(cls):
         if cls._connection is not None:
             query = (
                 "CREATE TABLE IF NOT EXISTS `rooms` ("
@@ -17,11 +17,21 @@ class RoomsRepository(Repository):
             cls.make_query(query)
 
     @classmethod
-    def add_room(cls, room):
+    def add(cls, room):
         if cls._connection is not None:
             query = (
-                "INSERT INTO `rooms` (id, name) "
+                "REPLACE INTO `rooms` (id, name) "
                 "VALUES (%s, %s)"
             )
             params = (room.id, room.name)
             cls.make_query(query, params)
+
+    @classmethod
+    def add_many(cls, rooms):
+        if cls._connection is not None:
+            query = (
+                "REPLACE INTO `rooms` (id, name) "
+                "VALUES (%s, %s)"
+            )
+            params = [(room.id, room.name) for room in rooms]
+            cls.make_many_query(query, params)

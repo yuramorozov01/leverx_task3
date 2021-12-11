@@ -9,6 +9,12 @@ from exceptions.format_error import FormatError
 from serializers.json_serializer import JsonSerializer
 from serializers.xml_serializer import XmlSerializer
 
+from models.room import Room
+from models.student import Student
+
+from repositories.rooms_repository import RoomsRepository
+from repositories.students_repository import StudentsRepository
+
 
 def get_file_extension(path):
     name, ext = os.path.splitext(path)
@@ -39,15 +45,27 @@ def get_serializer_instance(format_):
     return serializer
 
 
-def get_dict_of_data(serializer, path):
+def get_instances_by_data(serializer, path, model):
     '''Loading data in dictionary format with specified serializer and from specified path.'''
     try:
         dict_data = serializer.load(path)
-        return dict_data
+        return list(map(model, dict_data))
     except FileNotFoundError as e:
         sys.exit(f'Cannot find file {path}')
     except (FormatError, JSONDecodeError, xmltodict.expat.ExpatError) as e:
         sys.exit(str(e))
+
+
+def configure_database(repositories):
+    if len(repositories) > 0:
+        repositories[0].create_database()
+
+    for repository in repositories:
+        repository.create_table()
+
+
+def save_instances_into_database(instances, repository):
+    repository.add_many(instances)
 
 
 def save_data(serializer, data, path):
@@ -73,11 +91,20 @@ if __name__ == '__main__':
     serializer_to_load_rooms = get_serializer_instance(get_file_extension(path_to_rooms))
     serializer_to_save = get_serializer_instance(format_)
 
-    # Load students and rooms into dictionaries with received serializers
-    dict_students = get_dict_of_data(serializer_to_load_students, path_to_students)
-    dict_rooms = get_dict_of_data(serializer_to_load_rooms, path_to_rooms)
+    # Create instances of students and rooms with received serializers
+    rooms_instances = get_instances_by_data(serializer_to_load_rooms, path_to_rooms, Room)
+    students_instances = get_instances_by_data(serializer_to_load_students, path_to_students, Student)
 
-    # Save data into a specified file
-    # data = []
+    # Configure database
+    configure_database((RoomsRepository, StudentsRepository))
+
+    # Save instances into database
+    save_instances_into_database(rooms_instances, RoomsRepository)
+    save_instances_into_database(students_instances, StudentsRepository)
+
+    # Save result into a specified file
+    # data = {}
     # save_data(serializer_to_save, data, path_to_save)
     # print(f'File has been successfully saved to {path_to_save}')
+
+    RoomsRepository.close_connection()
