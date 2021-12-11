@@ -29,10 +29,10 @@ class StudentsRepository(Repository):
                 "VALUES (%s, %s, %s, %s, %s)"
             )
             params = (
-                student.get('id'),
-                student.get('name'),
-                student.get('birthday'),
-                student.get('sex'),
-                student.get('room')
+                student.id,
+                student.name,
+                student.birthday,
+                student.sex,
+                student.room,
             )
             cls.make_query(query, params)

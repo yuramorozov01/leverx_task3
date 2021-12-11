@@ -23,5 +23,5 @@ class RoomsRepository(Repository):
                 "INSERT INTO `rooms` (id, name) "
                 "VALUES (%s, %s)"
             )
-            params = (room.get('id'), room.get('name'))
+            params = (room.id, room.name)
             cls.make_query(query, params)
