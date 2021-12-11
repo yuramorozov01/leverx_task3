@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from decouple import config
 import mysql.connector
+from decouple import config
 
 
 class Repository(ABC):

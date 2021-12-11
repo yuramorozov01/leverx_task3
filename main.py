@@ -6,14 +6,12 @@ import xmltodict
 
 from argument_parser import get_argument_parser
 from exceptions.format_error import FormatError
-from serializers.json_serializer import JsonSerializer
-from serializers.xml_serializer import XmlSerializer
-
 from models.room import Room
 from models.student import Student
-
 from repositories.rooms_repository import RoomsRepository
 from repositories.students_repository import StudentsRepository
+from serializers.json_serializer import JsonSerializer
+from serializers.xml_serializer import XmlSerializer
 
 
 def get_file_extension(path):
