@@ -54,6 +54,13 @@ CLI has to have the next arguments:
     ```sh
     pip3 install -r requirements.txt
     ```
+5. Create .env file in the root folder
+   ```
+   DB_NAME=Database name
+   DB_USER=Database user
+   DB_PASSWORD=Database user password
+   DB_HOST=Database host
+   ```
 
 ## Exectuting
 1. Run script (format argument is case insensitive):
