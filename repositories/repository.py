@@ -56,23 +56,55 @@ class Repository(ABC):
 
     @classmethod
     def create_database(cls):
-        if cls._connection is not None:
-            query = (
-                "CREATE DATABASE IF NOT EXISTS {} "
-                "DEFAULT CHARACTER SET utf8 "
-                "DEFAULT COLLATE utf8_general_ci;"
-            ).format(config('DB_NAME'))
-            cls.make_query(query)
+        query = """
+            CREATE DATABASE IF NOT EXISTS {} 
+            DEFAULT CHARACTER SET utf8 
+            DEFAULT COLLATE utf8_general_ci;
+        """.format(config('DB_NAME'))
+        cls.make_query(query)
 
-            query = (
-                "USE {}"
-            ).format(config('DB_NAME'))
-            cls.make_query(query)
+        query = """
+            USE {}
+        """.format(config('DB_NAME'))
+        cls.make_query(query)
 
-            query = (
-                "SET sql_mode='NO_AUTO_VALUE_ON_ZERO'"
-            )
-            cls.make_query(query)
+        query = """
+            SET sql_mode='NO_AUTO_VALUE_ON_ZERO'
+        """
+        cls.make_query(query)
+
+        cls._create_stored_procedures()
+
+    @classmethod
+    def _create_stored_procedures(cls):
+        query = """
+            DROP PROCEDURE IF EXISTS create_index; 
+        """
+        cls.make_query(query)
+
+        query = """
+            CREATE PROCEDURE create_index(
+                current_database VARCHAR(256),
+                index_name_ VARCHAR(256),
+                table_name_ VARCHAR(256),
+                columns_ VARCHAR(256)
+            ) 
+            BEGIN
+                DECLARE is_exists INTEGER DEFAULT 0; 
+                SELECT COUNT(1) INTO is_exists
+                FROM INFORMATION_SCHEMA.STATISTICS 
+                WHERE TABLE_SCHEMA=current_database 
+                      AND TABLE_NAME=table_name_
+                      AND INDEX_NAME=index_name_;
+                IF is_exists = 0 THEN
+                    SET @query_ = CONCAT('CREATE INDEX ', index_name_, ' ON ', table_name_, ' (', columns_, ')');
+                    PREPARE stmt FROM @query_;
+                    EXECUTE stmt;
+                    DEALLOCATE PREPARE stmt;
+                END IF;
+            END; 
+        """
+        cls.make_query(query)
 
     @classmethod
     @abstractmethod
@@ -88,3 +120,8 @@ class Repository(ABC):
     @abstractmethod
     def add_many(cls, instances):
         '''Add list of instances to database'''
+
+    @classmethod
+    @abstractmethod
+    def create_indices(cls):
+        '''Create specified indices in the table'''
