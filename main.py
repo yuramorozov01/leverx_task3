@@ -60,11 +60,22 @@ def configure_database(repositories):
 
     for repository in repositories:
         repository.create_table()
+        repository.create_indices()
 
 
 def save_instances_into_database(instances, repository):
     repository.add_many(instances)
 
+
+def calculate_tasks(rooms_repository, students_repository):
+    amount_of_students_in_rooms_tuple = students_repository.get_amount_of_students_in_rooms()
+    amount_of_students_in_rooms_list_of_dicts = [
+        {'room_id': key, 'amount_of_students': value} for key, value in amount_of_students_in_rooms_tuple
+    ]
+    res = {
+        'amount_of_students_in_rooms': amount_of_students_in_rooms_list_of_dicts,
+    }
+    return res
 
 def save_data(serializer, data, path):
     '''Save processed data with specified serializer to file with path "path"'''
@@ -100,9 +111,10 @@ if __name__ == '__main__':
     save_instances_into_database(rooms_instances, RoomsRepository)
     save_instances_into_database(students_instances, StudentsRepository)
 
+    data = calculate_tasks(RoomsRepository, StudentsRepository)
+
     # Save result into a specified file
-    # data = {}
-    # save_data(serializer_to_save, data, path_to_save)
-    # print(f'File has been successfully saved to {path_to_save}')
+    save_data(serializer_to_save, data, path_to_save)
+    print(f'File has been successfully saved to {path_to_save}')
 
     RoomsRepository.close_connection()

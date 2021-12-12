@@ -54,5 +54,6 @@ class StudentsRepository(Repository):
     @classmethod
     def get_amount_of_students_in_rooms(cls):
         query = """
-             
+            CALL get_amount_of_students_in_rooms()
         """
+        return cls.make_query(query)

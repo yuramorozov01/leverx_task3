@@ -38,10 +38,11 @@ class Repository(ABC):
         if cls._connection is not None:
             try:
                 cursor = cls._connection.cursor()
-                result = cursor.execute(query, params)
+                cursor.execute(query, params)
                 cls._connection.commit()
-                a = 5
+                result = cursor.fetchall()
                 cursor.close()
+                return result
             except pymysql.Error as err:
                 print(err)
 
