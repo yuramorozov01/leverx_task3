@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-import mysql.connector
+import pymysql.cursors
 from decouple import config
 
 
@@ -11,16 +11,15 @@ class Repository(ABC):
     def get_connection(cls):
         if cls._connection is None:
             try:
-                cnx = mysql.connector.connect(
+                cnx = pymysql.connect(
                     user=config('DB_USER'),
                     password=config('DB_PASSWORD'),
                     host=config('DB_HOST'),
-                    port=config('DB_PORT'),
-                    auth_plugin='mysql_native_password'
+                    port=config('DB_PORT', default=3306, cast=int)
                 )
                 cls._connection = cnx
-            except mysql.connector.Error as err:
-                print(err.msg)
+            except pymysql.Error as err:
+                print(err)
                 cls.close_connection()
         return cls._connection
 
@@ -30,8 +29,8 @@ class Repository(ABC):
             try:
                 cls._connection.close()
                 cls._connection = None
-            except mysql.connector.Error as err:
-                print(err.msg)
+            except pymysql.Error as err:
+                print(err)
                 cls.close_connection()
 
     @classmethod
@@ -39,10 +38,12 @@ class Repository(ABC):
         if cls._connection is not None:
             try:
                 cursor = cls._connection.cursor()
-                cursor.execute(query, params)
+                result = cursor.execute(query, params)
                 cls._connection.commit()
-            except mysql.connector.Error as err:
-                print(err.msg)
+                a = 5
+                cursor.close()
+            except pymysql.Error as err:
+                print(err)
 
     @classmethod
     def make_many_query(cls, query, list_params=None):
@@ -51,8 +52,9 @@ class Repository(ABC):
                 cursor = cls._connection.cursor()
                 cursor.executemany(query, list_params)
                 cls._connection.commit()
-            except mysql.connector.Error as err:
-                print(err.msg)
+                cursor.close()
+            except pymysql.Error as err:
+                print(err)
 
     @classmethod
     def create_database(cls):
@@ -103,6 +105,21 @@ class Repository(ABC):
                     DEALLOCATE PREPARE stmt;
                 END IF;
             END; 
+        """
+        cls.make_query(query)
+
+        query = """
+            DROP PROCEDURE IF EXISTS get_amount_of_students_in_rooms; 
+        """
+        cls.make_query(query)
+
+        query = """
+            CREATE PROCEDURE get_amount_of_students_in_rooms()
+            BEGIN
+                SELECT `room`, COUNT(*) as `amount_of_students`
+                FROM `students`
+                GROUP BY `room`;
+            END;
         """
         cls.make_query(query)
 
