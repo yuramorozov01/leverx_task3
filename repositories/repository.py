@@ -77,7 +77,6 @@ class Repository(ABC):
         cls.make_query(query)
 
         cls._create_stored_procedures()
-        cls._create_views()
 
     @classmethod
     def _create_stored_procedures(cls):
@@ -126,27 +125,6 @@ class Repository(ABC):
         cls.make_query(query)
 
     @classmethod
-    def _create_views(cls):
-        # Top 5 rooms with the smallest average age of students
-        query = """
-            CREATE OR REPLACE 
-            VIEW `top_5_min_avg_age` 
-            AS 
-            SELECT `room`, AVG(TIMESTAMPDIFF(YEAR, `birthday`, CURDATE())) as `age`
-            FROM `students`
-            GROUP BY `room`
-            ORDER BY `age` 
-            LIMIT 5;
-        """
-        cls.make_query(query)
-
-        # Top 5 rooms with the biggest difference between age of students
-        query = """
-            
-        """
-        # cls.make_query(query)
-
-    @classmethod
     @abstractmethod
     def create_table(cls):
         '''Create table in database for specified model'''
@@ -165,3 +143,8 @@ class Repository(ABC):
     @abstractmethod
     def create_indices(cls):
         '''Create specified indices in the table'''
+
+    @classmethod
+    @abstractmethod
+    def create_views(cls):
+        '''Create views with specified table'''

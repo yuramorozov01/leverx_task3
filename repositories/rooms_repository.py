@@ -36,3 +36,7 @@ class RoomsRepository(Repository):
     @classmethod
     def create_indices(cls):
         pass
+
+    @classmethod
+    def create_views(cls):
+        pass

@@ -52,6 +52,34 @@ class StudentsRepository(Repository):
         cls.make_query(query)
 
     @classmethod
+    def create_views(cls):
+        # Top 5 rooms with the smallest average age of students
+        query = """
+            CREATE OR REPLACE 
+            VIEW `top_5_rooms_min_avg_age` 
+            AS 
+            SELECT `room`, AVG(TIMESTAMPDIFF(YEAR, `birthday`, CURDATE())) as `age`
+            FROM `students`
+            GROUP BY `room`
+            ORDER BY `age` 
+            LIMIT 5;
+        """
+        cls.make_query(query)
+
+        # Top 5 rooms with the biggest difference between age of students
+        query = """
+            CREATE OR REPLACE
+            VIEW `top_5_rooms_max_diff_in_age`
+            AS
+            SELECT `room`, MAX(TIMESTAMPDIFF(YEAR, `birthday`, CURDATE())) - MIN(TIMESTAMPDIFF(YEAR, `birthday`, CURDATE())) AS `age`
+            FROM `students`
+            GROUP BY `room`
+            ORDER BY `age` DESC
+            LIMIT 5;
+        """
+        cls.make_query(query)
+
+    @classmethod
     def get_amount_of_students_in_rooms(cls):
         query = """
             CALL get_amount_of_students_in_rooms()
@@ -59,8 +87,15 @@ class StudentsRepository(Repository):
         return cls.make_query(query)
 
     @classmethod
-    def get_top_5_min_avg_age(cls):
+    def get_top_5_rooms_min_avg_age(cls):
         query = """
-            SELECT * FROM `top_5_min_avg_age`;
+            SELECT * FROM `top_5_rooms_min_avg_age`;
+        """
+        return cls.make_query(query)
+
+    @classmethod
+    def get_top_5_rooms_max_diff_in_age(cls):
+        query = """
+            SELECT * FROM `top_5_rooms_max_diff_in_age`;
         """
         return cls.make_query(query)
