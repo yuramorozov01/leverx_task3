@@ -72,10 +72,18 @@ def calculate_tasks(rooms_repository, students_repository):
     amount_of_students_in_rooms_list_of_dicts = [
         {'room_id': key, 'amount_of_students': value} for key, value in amount_of_students_in_rooms_tuple
     ]
+
+    top_5_min_avg_age_tuple = students_repository.get_top_5_min_avg_age()
+    top_5_min_avg_age_list_of_dicts = [
+        {'room_id': key, 'average_age': float(value)} for key, value in top_5_min_avg_age_tuple
+    ]
+
     res = {
         'amount_of_students_in_rooms': amount_of_students_in_rooms_list_of_dicts,
+        'top_5_min_avg_age': top_5_min_avg_age_list_of_dicts,
     }
     return res
+
 
 def save_data(serializer, data, path):
     '''Save processed data with specified serializer to file with path "path"'''

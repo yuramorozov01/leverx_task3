@@ -57,3 +57,10 @@ class StudentsRepository(Repository):
             CALL get_amount_of_students_in_rooms()
         """
         return cls.make_query(query)
+
+    @classmethod
+    def get_top_5_min_avg_age(cls):
+        query = """
+            SELECT * FROM `top_5_min_avg_age`;
+        """
+        return cls.make_query(query)
