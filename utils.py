@@ -79,10 +79,14 @@ def calculate_tasks(rooms_repository, students_repository):
         {'room_id': key, 'diff_in_age': value} for key, value in top_5_rooms_max_diff_in_age_tuple
     ]
 
+    list_of_rooms_with_different_sexes_tuple = students_repository.get_list_of_rooms_with_different_sexes()
+    list_of_rooms_with_different_sexes_list = [item[0] for item in list_of_rooms_with_different_sexes_tuple]
+
     res = {
         'amount_of_students_in_rooms': amount_of_students_in_rooms_list_of_dicts,
         'top_5_rooms_min_avg_age': top_5_rooms_min_avg_age_list_of_dicts,
         'top_5_rooms_max_diff_in_age': top_5_rooms_max_diff_in_age_list_of_dicts,
+        'list_of_rooms_with_different_sexes': list_of_rooms_with_different_sexes_list,
     }
     return res
 

@@ -79,6 +79,21 @@ class StudentsRepository(Repository):
         """
         cls.make_query(query)
 
+        # List of rooms with students of different sexes
+        query = """
+            CREATE OR REPLACE
+            VIEW `rooms_with_different_sexes`
+            AS
+            SELECT `room`
+            FROM (SELECT `room`, 
+                         IF ((SELECT get_amount_in_room_by_sex(`room`, 'F') >= 1) AND 
+                             (SELECT get_amount_in_room_by_sex(`room`, 'M') >= 1), 1, 0) as `is_many_sexes`
+                  FROM `students`
+                  GROUP BY `room`) as `tmp`
+            WHERE `is_many_sexes`=1;
+        """
+        cls.make_query(query)
+
     @classmethod
     def get_amount_of_students_in_rooms(cls):
         query = """
@@ -97,5 +112,12 @@ class StudentsRepository(Repository):
     def get_top_5_rooms_max_diff_in_age(cls):
         query = """
             SELECT * FROM `top_5_rooms_max_diff_in_age`;
+        """
+        return cls.make_query(query)
+
+    @classmethod
+    def get_list_of_rooms_with_different_sexes(cls):
+        query = """
+            SELECT * FROM `rooms_with_different_sexes`;
         """
         return cls.make_query(query)

@@ -77,6 +77,7 @@ class Repository(ABC):
         cls.make_query(query)
 
         cls._create_stored_procedures()
+        cls._create_functions()
 
     @classmethod
     def _create_stored_procedures(cls):
@@ -120,6 +121,23 @@ class Repository(ABC):
                 SELECT `room`, COUNT(*) as `amount_of_students`
                 FROM `students`
                 GROUP BY `room`;
+            END;
+        """
+        cls.make_query(query)
+
+    @classmethod
+    def _create_functions(cls):
+        query = """
+            CREATE FUNCTION get_amount_in_room_by_sex(room_id INT UNSIGNED, sex_name ENUM('M','F'))
+                RETURNS INT UNSIGNED
+                DETERMINISTIC
+            BEGIN
+                DECLARE amount_of_studens_with_specified_sex INT UNSIGNED DEFAULT 0;
+                SELECT COUNT(*) INTO amount_of_studens_with_specified_sex 
+                FROM `students`
+                WHERE `room`=room_id
+                      AND `sex`=sex_name;
+                RETURN amount_of_studens_with_specified_sex;
             END;
         """
         cls.make_query(query)
