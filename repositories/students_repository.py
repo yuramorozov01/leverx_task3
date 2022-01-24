@@ -53,8 +53,7 @@ class StudentsRepository(Repository):
 
     @classmethod
     def create_views(cls):
-        # Top 5 rooms with the smallest average age of students
-        query = """
+        top_5_rooms_w_smallest_avg_students_age = """
             CREATE OR REPLACE 
             VIEW `top_5_rooms_min_avg_age` 
             AS 
@@ -64,10 +63,9 @@ class StudentsRepository(Repository):
             ORDER BY `age` 
             LIMIT 5;
         """
-        cls.make_query(query)
+        cls.make_query(top_5_rooms_w_smallest_avg_students_age)
 
-        # Top 5 rooms with the biggest difference between age of students
-        query = """
+        top_5_rooms_w_biggest_diff_btw_students_age = """
             CREATE OR REPLACE
             VIEW `top_5_rooms_max_diff_in_age`
             AS
@@ -77,22 +75,18 @@ class StudentsRepository(Repository):
             ORDER BY `age` DESC
             LIMIT 5;
         """
-        cls.make_query(query)
+        cls.make_query(top_5_rooms_w_biggest_diff_btw_students_age)
 
-        # List of rooms with students of different sexes
-        query = """
+        rooms_w_diff_sex_students = """
             CREATE OR REPLACE
             VIEW `rooms_with_different_sexes`
             AS
-            SELECT `room`
-            FROM (SELECT `room`, 
-                         IF ((SELECT get_amount_in_room_by_sex(`room`, 'F') >= 1) AND 
-                             (SELECT get_amount_in_room_by_sex(`room`, 'M') >= 1), 1, 0) as `is_many_sexes`
-                  FROM `students`
-                  GROUP BY `room`) as `tmp`
-            WHERE `is_many_sexes`=1;
+            SELECT `room`, COUNT(DISTINCT `sex`) as `sexes`
+            FROM `students`
+            GROUP BY `room`
+            HAVING COUNT(DISTINCT `sex`) > 1;
         """
-        cls.make_query(query)
+        cls.make_query(rooms_w_diff_sex_students)
 
     @classmethod
     def get_amount_of_students_in_rooms(cls):
